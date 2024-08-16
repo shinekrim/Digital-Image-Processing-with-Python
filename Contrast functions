@@ -31,3 +31,19 @@ def transform(pic,tname,gamma):
     imgN=imgN.astype(img1.dtype)
             
     return  imgN
+#applying transforms after each other
+
+img2=transform(img,'contrast_stretching', 1)
+img3=transform(img,'powerlaw', 0.5)
+img4=transform(img3,'contrast_stretching', 1)
+img5=transform(img2,'powerlaw', 0.5)
+
+#plotting part; for comparison
+
+plt.subplot(2,3,1),plt.imshow(img2,'gray',vmin=0,vmax=255),plt.title('first contrast',fontsize=10)
+plt.subplot(2,3,2),plt.imshow(img,'gray',vmin=0,vmax=255),plt.title('original',fontsize=10)
+plt.subplot(2,3,3),plt.imshow(img3,'gray',vmin=0,vmax=255),plt.title('first powerlaw',fontsize=10)
+plt.subplot(2,3,4),plt.imshow(img4,'gray',vmin=0,vmax=255),plt.title('sec contrast',fontsize=10)
+plt.subplot(2,3,5),plt.imshow(img5,'gray',vmin=0,vmax=255),plt.title('sec powerlaw',fontsize=10)
+
+plt.show()
