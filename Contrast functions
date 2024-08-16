@@ -1,0 +1,33 @@
+#Powerlaw and Contrast stretching transforms
+import numpy as np
+import cv2 as cv
+import matplotlib.pyplot as plt
+img=cv.imread('spine.tif',0)
+
+img1=np.array(img)
+[cols,rows]=img1.shape
+print(img1.shape)
+a=np.amin(img1)
+b=np.amax(img1)
+print(a,b)
+def transform(pic,tname,gamma):
+    img1=np.array(pic)
+    [cols,rows]=img1.shape
+    gamma=1 
+    
+    imgN=np.zeros((cols,rows),dtype=int)
+    if tname=='contrast_stretching':  
+        for i in range(0,img1.shape[0]):
+            for j in range(0,img1.shape[1]):
+                imgN[i][j]=255/(b-a)*(img1[i][j]-a)
+                imgN=imgN.astype(img1.dtype)            
+    
+    if tname=='powerlaw': 
+        for i in range(pic.shape[0]):
+            for j in range(pic.shape[1]):
+                imgN[i][j]=(img1[i][j]**gamma)*(255**(1-gamma))
+                
+                  
+    imgN=imgN.astype(img1.dtype)
+            
+    return  imgN
