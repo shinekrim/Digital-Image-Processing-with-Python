@@ -1,0 +1,88 @@
+import numpy as np
+import cv2 as cv
+import matplotlib.pyplot as plt
+
+img1=cv.imread('spineXray.tif',0)
+img2=cv.imread('chest.tif',cv.IMREAD_ANYDEPTH)
+print("img1:",img1.shape,img1.dtype)
+print("img2:",img2.shape,img2.dtype)
+##preform CLAHE filtering
+def performCLAHE(img):
+  
+   clahe = cv.createCLAHE(clipLimit =2.0, tileGridSize=(8,8))
+   cl_img = clahe.apply(img)
+   return cl_img
+plt.imshow(performCLAHE(img1),cmap='gray')
+plt.show() 
+###
+#Histogram equalization transform as a 'transform(img1,bit_depth)' function
+img4=np.array(img1)
+img5=np.array(img2)
+def transform(img1,bit_depth):
+     
+     img1_copy = img1.copy() 
+     
+     #L=bit_depth
+     
+     g = cv.split(img1_copy) #segregate gray stream only,cause we have gray scale image
+     imhist,bins = np.histogram(img1_copy.flatten(),bit_depth,normed=True)
+     h_g, bin_g = np.histogram(img1_copy.flatten(), 256, [0, 256])#get image histogram
+     cdf = imhist.cumsum() #cumulative distribution function
+     b=np.amax(cdf)
+     d=np.amin(cdf)
+     cdf_m_g = 255 * (cdf-d)/(b-d) #normalize
+     cdf_final_g = np.ma.filled(cdf_m_g,0).astype('uint8') #converting data type to int
+     img_g = cdf_final_g[g] #merge image in gray channel
+     img_out=img_g
+     return img_out
+###
+#comparing transforns on a Chest Xray image and a Spine image
+img1_clahe=performCLAHE(img1)
+img1_eq=transform(img1, 256)#img1 is uint8
+img2_clahe=performCLAHE(img2)
+img2_eq=transform(img2,2**16)#img2 is uint16
+
+plt.figure(1)
+#spine figure plots
+plt.subplot(3,3,1),plt.imshow(img1,cmap='gray'),plt.title('original',fontsize=10)
+plt.subplot(3,3,2),plt.imshow(img1_eq,cmap='gray'),plt.title('equalizaed image',fontsize=10)
+plt.subplot(3,3,3),plt.imshow(img1_clahe,cmap='gray'),plt.title('CLAHE applied image',fontsize=10)
+plt.subplot(3,3,4),plt.hist(img1.ravel(),bins=255//4),plt.title('original image histogram',fontsize=10)
+plt.subplot(3,3,5),plt.hist(img1_eq.ravel(),bins=255//4),plt.title('equalized image histogram',fontsize=10)
+plt.subplot(3,3,6),plt.hist(img1_clahe.ravel(),bins=255//4),plt.title('clahe transformed histogram',fontsize=10)
+
+imhist,bins=np.histogram(img1.flatten(),256)
+
+
+cdf=np.cumsum(imhist)
+plt.subplot(3,3,7),plt.plot(cdf),plt.title('original image cdf',fontsize=10)
+imhist1,bins=np.histogram(img1_eq.flatten(),256)
+cdf_eq=np.cumsum(imhist1)
+plt.subplot(3,3,8),plt.plot(cdf_eq),plt.title('cdf of equalization',fontsize=10)
+imhist2,bins=np.histogram(img1_clahe.flatten())
+cdf_clahe=np.cumsum(imhist2)
+plt.subplot(3,3,9),plt.plot(cdf_clahe),plt.title('cdf of clahe image',fontsize=10)
+plt.show()
+#chest figure plots
+plt.figure(2)
+plt.subplot(3,3,1),plt.imshow(img2,cmap='gray'),plt.title('original image',fontsize=10)
+plt.subplot(3,3,2),plt.imshow(img2_eq,cmap='gray'),plt.title('equalize image',fontsize=10)
+plt.subplot(3,3,3),plt.imshow(img2_clahe,cmap='gray'),plt.title('clahe transformed image',fontsize=10)
+plt.subplot(3,3,4),plt.hist(img2.ravel(),bins=(2**16-1)//1024),plt.title('original image histogram',fontsize=10)
+plt.subplot(3,3,5),plt.hist(img2_eq.ravel(),bins=(2**16-1)//1024),plt.title('equalized image histogram',fontsize=10)
+plt.subplot(3,3,6),plt.hist(img2_clahe.ravel(),bins=(2**16-1)//1024),plt.title('clahe image histogram',fontsize=10)
+imhist3,bins=np.histogram(img2.flatten(),2**16)
+cdf3=np.cumsum(imhist3)
+plt.subplot(3,3,7),plt.plot(cdf3),plt.title('original cdf',fontsize=10)
+imhist_eq,bins=np.histogram(img2_eq.flatten(),2**16)
+cdf_eq=np.cumsum(imhist_eq)
+plt.subplot(3,3,8),plt.plot(cdf_eq),plt.title('equalized image cdf',fontsize=10)
+imhist_clahe,bins=np.histogram(img2_clahe,2**16-1)
+cdf_clahe=np.cumsum(imhist_clahe)
+plt.subplot(3,3,9),plt.plot(cdf_clahe),plt.title('clahe image cdf',fontsize=10)
+
+plt.show()
+
+
+
+
