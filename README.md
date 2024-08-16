@@ -4,3 +4,5 @@ for example, power law transform with gamma<1 (=0.5 in this project) will result
 Contrast stretching transform will result in better contrast.
 
 
+
+
